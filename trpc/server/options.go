@@ -20,6 +20,7 @@ var (
 	DefaultId               = uuid.New().String()
 	DefaultRegisterInterval = time.Second * 30
 	DefaultRegisterTTL      = time.Second * 90
+	DefaultServer           = NewServer()
 )
 
 type Options struct {

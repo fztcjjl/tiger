@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/fztcjjl/tiger/app"
 	pb "github.com/fztcjjl/tiger/examples/proto"
 	"github.com/fztcjjl/tiger/trpc/server"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
@@ -15,20 +12,14 @@ func main() {
 		server.Name("mdns.srv.hello"),
 	)
 	pb.RegisterGreeterServer(srv.Server(), &Greeter{})
-	srv.Start()
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-	<-ch
-
-	srv.Stop()
+	app := app.NewApp(app.Server(srv))
+	app.Run()
 }
 
 type Greeter struct {
 }
 
 func (g *Greeter) SayHello(ctx context.Context, req *pb.HelloRequest) (rsp *pb.HelloReply, err error) {
-	log.Printf("Received: %s", req.Name)
 	rsp = &pb.HelloReply{Message: "Hello " + req.Name}
 	return
 }
