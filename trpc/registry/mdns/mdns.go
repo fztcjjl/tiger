@@ -358,7 +358,7 @@ func (m *mdnsRegistry) Deregister(service *registry.Service, opts ...registry.De
 	}
 
 	// we want to unlock before we call deregister on the global domain, so it's important this unlock
-	// is applied after the defer m.Deregister is called above
+	// is applied after the defer m.deregister is called above
 	m.Lock()
 	defer m.Unlock()
 

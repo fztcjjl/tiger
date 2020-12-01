@@ -168,7 +168,7 @@ func (s *Server) Start() error {
 	s.opts.Address = ts.Addr().String()
 	s.Unlock()
 
-	if err := s.Register(); err != nil {
+	if err := s.register(); err != nil {
 		log.Errorf("Server register error: %v", err)
 	}
 
@@ -195,7 +195,7 @@ func (s *Server) Start() error {
 			select {
 			// register self on interval
 			case <-t.C:
-				if err := s.Register(); err != nil {
+				if err := s.register(); err != nil {
 					log.Error("Server register error: ", err)
 				}
 			// wait for exit
@@ -205,7 +205,7 @@ func (s *Server) Start() error {
 		}
 
 		// deregister self
-		if err := s.Deregister(); err != nil {
+		if err := s.deregister(); err != nil {
 			log.Error("Server deregister error: ", err)
 		}
 
@@ -228,7 +228,6 @@ func (s *Server) Start() error {
 			s.server.Stop()
 		}
 
-		// close transport
 		ch <- nil
 	}()
 
@@ -273,7 +272,7 @@ func (s *Server) Init(opt ...Option) error {
 	return nil
 }
 
-func (s *Server) Register() error {
+func (s *Server) register() error {
 	s.RLock()
 	config := s.opts
 	s.RUnlock()
@@ -364,7 +363,7 @@ func (s *Server) Register() error {
 	return err
 }
 
-func (s *Server) Deregister() error {
+func (s *Server) deregister() error {
 	var err error
 	var advt, host, port string
 

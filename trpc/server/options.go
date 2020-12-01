@@ -133,14 +133,14 @@ func Registry(r registry.Registry) Option {
 	}
 }
 
-// Register the service with a TTL
+// register the service with a TTL
 func RegisterTTL(t time.Duration) Option {
 	return func(o *Options) {
 		o.RegisterTTL = t
 	}
 }
 
-// Register the service with at interval
+// register the service with at interval
 func RegisterInterval(t time.Duration) Option {
 	return func(o *Options) {
 		o.RegisterInterval = t

@@ -31,8 +31,16 @@ func (a *app) Init(opt ...Option) {
 
 func (a *app) Run() error {
 	log.Infof("Starting [service] %s", a.Name())
-	if err := a.opts.Server.Start(); err != nil {
-		return err
+	if a.opts.Server != nil {
+		if err := a.opts.Server.Start(); err != nil {
+			return err
+		}
+	}
+
+	if a.opts.WebServer != nil {
+		if err := a.opts.WebServer.Start(); err != nil {
+			return err
+		}
 	}
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
@@ -44,5 +52,13 @@ func (a *app) Run() error {
 	case <-a.opts.Context.Done():
 	}
 
-	return a.opts.Server.Stop()
+	if a.opts.Server != nil {
+		a.opts.Server.Stop()
+	}
+
+	if a.opts.WebServer != nil {
+		a.opts.WebServer.Stop()
+	}
+
+	return nil
 }

@@ -3,10 +3,12 @@ package app
 import (
 	"context"
 	"github.com/fztcjjl/tiger/trpc/server"
+	"github.com/fztcjjl/tiger/trpc/web"
 )
 
 type Options struct {
-	Server *server.Server
+	Server    *server.Server
+	WebServer *web.Server
 
 	// Other options for implementations of the interface
 	// can be stored in a context
@@ -31,6 +33,12 @@ type Option func(*Options)
 func Server(s *server.Server) Option {
 	return func(o *Options) {
 		o.Server = s
+	}
+}
+
+func WebServer(s *web.Server) Option {
+	return func(o *Options) {
+		o.WebServer = s
 	}
 }
 
