@@ -19,7 +19,11 @@ func NewClient(service string, opt ...Option) *Client {
 	resolver.Register(opts.Registry)
 	target := opts.Registry.String() + ":///" + service
 
-	conn, err := grpc.Dial(target, opts.DialOptions...)
+	grpcDialOptions := []grpc.DialOption{
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+	}
+	grpcDialOptions = append(grpcDialOptions, opts.DialOptions...)
+	conn, err := grpc.Dial(target, grpcDialOptions...)
 	if err != nil {
 		return nil
 	}
