@@ -2,13 +2,12 @@ package app
 
 import (
 	"context"
-	"github.com/fztcjjl/tiger/trpc/server"
-	"github.com/fztcjjl/tiger/trpc/web"
 )
 
 type Options struct {
-	Server    *server.Server
-	WebServer *web.Server
+	//Server     *server.Server
+	//WebServer  *web.Server
+	EnableHttp bool
 
 	// Other options for implementations of the interface
 	// can be stored in a context
@@ -17,7 +16,7 @@ type Options struct {
 
 func newOptions(opt ...Option) Options {
 	opts := Options{
-		Server:  server.DefaultServer,
+		//Server:  server.DefaultServer,
 		Context: context.Background(),
 	}
 
@@ -30,20 +29,14 @@ func newOptions(opt ...Option) Options {
 
 type Option func(*Options)
 
-func Server(s *server.Server) Option {
-	return func(o *Options) {
-		o.Server = s
-	}
-}
-
-func WebServer(s *web.Server) Option {
-	return func(o *Options) {
-		o.WebServer = s
-	}
-}
-
 func Context(ctx context.Context) Option {
 	return func(o *Options) {
 		o.Context = ctx
+	}
+}
+
+func WithHttp(enable bool) Option {
+	return func(o *Options) {
+		o.EnableHttp = enable
 	}
 }
