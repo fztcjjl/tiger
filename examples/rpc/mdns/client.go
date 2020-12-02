@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cli := client.NewClient(
-		"mdns.srv.hello",
+		"tiger.srv.hello",
 		client.GrpcDialOption(grpc.WithInsecure()),
 	)
 

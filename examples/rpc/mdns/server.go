@@ -12,7 +12,7 @@ import (
 
 func main() {
 	srv := server.NewServer(
-		server.Name("mdns.srv.hello"),
+		server.Name("tiger.srv.hello"),
 	)
 	pb.RegisterGreeterServer(srv.Server(), &Greeter{})
 	srv.Start()

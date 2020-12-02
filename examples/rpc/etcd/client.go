@@ -12,7 +12,7 @@ import (
 
 func main() {
 	cli := client.NewClient(
-		"etcd.srv.hello",
+		"tiger.srv.hello",
 		client.Registry(etcd.NewRegistry(registry.Addrs("127.0.0.1:2379"))),
 		client.GrpcDialOption(grpc.WithInsecure()),
 	)

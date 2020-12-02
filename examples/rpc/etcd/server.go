@@ -14,7 +14,7 @@ import (
 
 func main() {
 	srv := server.NewServer(
-		server.Name("etcd.srv.hello"),
+		server.Name("tiger.srv.hello"),
 		server.Registry(etcd.NewRegistry(registry.Addrs("127.0.0.1:2379"))),
 	)
 	pb.RegisterGreeterServer(srv.Server(), &Greeter{})
