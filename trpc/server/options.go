@@ -168,6 +168,7 @@ type netListener struct{}
 type maxMsgSizeKey struct{}
 type maxConnKey struct{}
 type tlsAuth struct{}
+type unaryServerInt struct{}
 
 // AuthTLS should be used to setup a secure authentication using TLS
 func AuthTLS(t *tls.Config) Option {
@@ -195,4 +196,8 @@ func GrpcOptions(opts ...grpc.ServerOption) Option {
 //
 func MaxMsgSize(s int) Option {
 	return setServerOption(maxMsgSizeKey{}, s)
+}
+
+func UnaryServerInterceptor(u grpc.UnaryServerInterceptor) Option {
+	return setServerOption(unaryServerInt{}, u)
 }

@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/fztcjjl/tiger/trpc/client/resolver"
+	log "github.com/fztcjjl/tiger/trpc/logger"
 	"github.com/fztcjjl/tiger/trpc/registry"
 	"google.golang.org/grpc"
 )
@@ -24,7 +25,9 @@ func NewClient(service string, opt ...Option) *Client {
 	}
 	grpcDialOptions = append(grpcDialOptions, opts.DialOptions...)
 	conn, err := grpc.Dial(target, grpcDialOptions...)
+
 	if err != nil {
+		log.Error(err)
 		return nil
 	}
 	client.conn = conn

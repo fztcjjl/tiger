@@ -32,17 +32,22 @@ func (g *Greeter) SayHello(ctx context.Context, req *pb.HelloRequest) (rsp *pb.H
 
 func SayHello(w http.ResponseWriter, r *http.Request) {
 	cli := client.NewClient(
-		"tiger.srv.hello",
+		"srv.hello",
 		client.Registry(etcd.NewRegistry(registry.Addrs("127.0.0.1:2379"))),
 		client.GrpcDialOption(grpc.WithInsecure()),
 	)
 
+	if cli == nil {
+		log.Println("NewClient failed")
+		return
+	}
 	grpcClient := pb.NewGreeterClient(cli.GetConn())
 
 	req := pb.HelloRequest{Name: "John"}
 	rsp, err := grpcClient.SayHello(context.Background(), &req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	log.Printf("Greeting: %s", rsp.Message)
 	w.Write([]byte(rsp.Message))

@@ -1,11 +1,20 @@
 package app
 
 import (
+	"github.com/fztcjjl/tiger/pkg/middleware/zap"
+	"github.com/fztcjjl/tiger/pkg/trace"
 	log "github.com/fztcjjl/tiger/trpc/logger"
 	"github.com/fztcjjl/tiger/trpc/registry"
 	"github.com/fztcjjl/tiger/trpc/registry/etcd"
 	"github.com/fztcjjl/tiger/trpc/server"
 	"github.com/fztcjjl/tiger/trpc/web"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+
+	//grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"
@@ -30,18 +39,27 @@ func NewApp(opt ...Option) *App {
 	if len(addrs) > 0 {
 		r = etcd.NewRegistry(registry.Addrs(addrs...))
 	}
+	name := app.config.GetString("app.name")
+	version := app.config.GetString("app.version")
 	if app.opts.EnableHttp {
 		app.webServer = web.NewServer(
-			web.Name(app.config.GetString("web.name")),
-			web.Version(app.config.GetString("web.version")),
+			web.Name("web."+name),
+			web.Version(version),
 			web.Registry(r),
 		)
 	}
 
+	app.initTracer()
 	app.server = server.NewServer(
-		server.Name(app.config.GetString("rpc.name")),
-		server.Version(app.config.GetString("rpc.version")),
+		server.Name("srv."+name),
+		server.Version(version),
 		server.Registry(r),
+		server.UnaryServerInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_opentracing.UnaryServerInterceptor(),
+			grpc_prometheus.UnaryServerInterceptor,
+			grpc_zap.UnaryServerInterceptor(zap.Logger()),
+			grpc_recovery.UnaryServerInterceptor(),
+		)),
 	)
 
 	return app
@@ -56,7 +74,7 @@ func (a *App) GetWebServer() *web.Server {
 }
 
 func (a *App) Name() string {
-	return a.server.Options().Name
+	return a.config.GetString("app.name")
 }
 
 func (a *App) Init(opt ...Option) {
@@ -76,6 +94,16 @@ func (a *App) loadConfig() {
 
 	a.config = &Config{Viper: v}
 	return
+}
+
+func (a *App) initLogger() {
+
+}
+
+func (a *App) initTracer() {
+	n := a.config.GetString("app.name")
+	addr := a.config.GetString("jaeger.address")
+	trace.Init(n, addr)
 }
 
 func (a *App) GetConfig() *Config {

@@ -66,19 +66,23 @@ func (s *Server) configure(opts ...Option) {
 
 	maxMsgSize := s.getMaxMsgSize()
 
-	gopts := []grpc.ServerOption{
+	srvOpts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(maxMsgSize),
 		grpc.MaxSendMsgSize(maxMsgSize),
 	}
 
 	if creds := s.getCredentials(); creds != nil {
-		gopts = append(gopts, grpc.Creds(creds))
+		srvOpts = append(srvOpts, grpc.Creds(creds))
 	}
 
-	if opts := s.getGrpcOptions(); opts != nil {
-		gopts = append(gopts, opts...)
+	if u := s.getUnaryServerInterceptor(); u != nil {
+		srvOpts = append(srvOpts, grpc.UnaryInterceptor(u))
 	}
-	s.server = grpc.NewServer(gopts...)
+
+	if gopts := s.getGrpcOptions(); gopts != nil {
+		srvOpts = append(srvOpts, gopts...)
+	}
+	s.server = grpc.NewServer(srvOpts...)
 
 }
 
@@ -86,6 +90,15 @@ func (s *Server) getCredentials() credentials.TransportCredentials {
 	if s.opts.Context != nil {
 		if v, ok := s.opts.Context.Value(tlsAuth{}).(*tls.Config); ok && v != nil {
 			return credentials.NewTLS(v)
+		}
+	}
+	return nil
+}
+
+func (s *Server) getUnaryServerInterceptor() grpc.UnaryServerInterceptor {
+	if s.opts.Context != nil {
+		if v, ok := s.opts.Context.Value(unaryServerInt{}).(grpc.UnaryServerInterceptor); ok && v != nil {
+			return v
 		}
 	}
 	return nil
