@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/fztcjjl/tiger/pkg/middleware/zap"
+	"github.com/fztcjjl/tiger/pkg/middleware/grpc/zap"
 	"github.com/fztcjjl/tiger/pkg/trace"
 	log "github.com/fztcjjl/tiger/trpc/logger"
 	"github.com/fztcjjl/tiger/trpc/registry"

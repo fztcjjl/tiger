@@ -4,11 +4,14 @@ import (
 	"context"
 	"github.com/fztcjjl/tiger/app"
 	pb "github.com/fztcjjl/tiger/examples/proto"
+	"github.com/fztcjjl/tiger/pkg/middleware/gin/trace"
 	"github.com/fztcjjl/tiger/trpc/client"
 	"github.com/fztcjjl/tiger/trpc/registry"
 	"github.com/fztcjjl/tiger/trpc/registry/etcd"
 	"github.com/fztcjjl/tiger/trpc/web"
 	"github.com/gin-gonic/gin"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
@@ -35,21 +38,24 @@ func (g *Greeter) SayHello(ctx context.Context, req *pb.HelloRequest) (rsp *pb.H
 func handler() http.Handler {
 	route := gin.New()
 
+	route.Use(trace.Trace())
 	route.GET("/hello", sayHello)
 	return route
 }
 
 func sayHello(ctx *gin.Context) {
 	cli := client.NewClient(
-		"tiger.srv.hello",
+		"srv.hello",
 		client.Registry(etcd.NewRegistry(registry.Addrs("127.0.0.1:2379"))),
 		client.GrpcDialOption(grpc.WithInsecure()),
+		client.UnaryClientInterceptor(grpc_middleware.ChainUnaryClient(
+			grpc_opentracing.UnaryClientInterceptor(),
+		)),
 	)
 
 	grpcClient := pb.NewGreeterClient(cli.GetConn())
-
 	req := pb.HelloRequest{Name: "John"}
-	rsp, err := grpcClient.SayHello(context.Background(), &req)
+	rsp, err := grpcClient.SayHello(trace.ContextWithSpan(ctx), &req)
 	if err != nil {
 		log.Fatal(err)
 	}

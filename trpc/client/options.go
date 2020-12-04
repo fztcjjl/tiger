@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"github.com/fztcjjl/tiger/trpc/registry"
 	"github.com/fztcjjl/tiger/trpc/registry/mdns"
 	"google.golang.org/grpc"
@@ -11,6 +12,9 @@ type Option func(*Options)
 type Options struct {
 	Registry    registry.Registry
 	DialOptions []grpc.DialOption
+	// Other options for implementations of the interface
+	// can be stored in a context
+	Context context.Context
 }
 
 func Registry(r registry.Registry) Option {
@@ -37,4 +41,10 @@ func newOptions(opt ...Option) Options {
 	}
 
 	return opts
+}
+
+type unaryClientInt struct{}
+
+func UnaryClientInterceptor(u grpc.UnaryClientInterceptor) Option {
+	return setClientOption(unaryClientInt{}, u)
 }
