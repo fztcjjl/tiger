@@ -10,7 +10,6 @@ import (
 	"github.com/fztcjjl/tiger/trpc/registry/etcd"
 	"github.com/fztcjjl/tiger/trpc/web"
 	"github.com/gin-gonic/gin"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"google.golang.org/grpc"
 	"log"
@@ -48,9 +47,9 @@ func sayHello(ctx *gin.Context) {
 		"srv.hello",
 		client.Registry(etcd.NewRegistry(registry.Addrs("127.0.0.1:2379"))),
 		client.GrpcDialOption(grpc.WithInsecure()),
-		client.UnaryClientInterceptor(grpc_middleware.ChainUnaryClient(
+		client.Interceptors(
 			grpc_opentracing.UnaryClientInterceptor(),
-		)),
+		),
 	)
 
 	grpcClient := pb.NewGreeterClient(cli.GetConn())

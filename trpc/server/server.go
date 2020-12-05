@@ -75,8 +75,8 @@ func (s *Server) configure(opts ...Option) {
 		srvOpts = append(srvOpts, grpc.Creds(creds))
 	}
 
-	if u := s.getUnaryServerInterceptor(); u != nil {
-		srvOpts = append(srvOpts, grpc.UnaryInterceptor(u))
+	if interceptors := s.getInterceptors(); interceptors != nil {
+		srvOpts = append(srvOpts, grpc.ChainUnaryInterceptor(interceptors...))
 	}
 
 	if gopts := s.getGrpcOptions(); gopts != nil {
@@ -95,12 +95,15 @@ func (s *Server) getCredentials() credentials.TransportCredentials {
 	return nil
 }
 
-func (s *Server) getUnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	if s.opts.Context != nil {
-		if v, ok := s.opts.Context.Value(unaryServerInt{}).(grpc.UnaryServerInterceptor); ok && v != nil {
-			return v
-		}
+func (s *Server) getInterceptors() []grpc.UnaryServerInterceptor {
+	if s.opts.Context == nil {
+		return nil
 	}
+
+	if v, ok := s.opts.Context.Value(unaryServerInterceptors{}).([]grpc.UnaryServerInterceptor); ok && v != nil {
+		return v
+	}
+
 	return nil
 }
 
@@ -342,7 +345,7 @@ func (s *Server) register() error {
 	} else {
 		host = advt
 	}
-	addr, err := addr.Extract(host)
+	address, err := addr.Extract(host)
 	if err != nil {
 		return err
 	}
@@ -350,7 +353,7 @@ func (s *Server) register() error {
 	// register service
 	node := &registry.Node{
 		Id:      config.Name + "-" + config.Id,
-		Address: mnet.HostPort(addr, port),
+		Address: mnet.HostPort(address, port),
 	}
 
 	svc := &registry.Service{
@@ -408,14 +411,14 @@ func (s *Server) deregister() error {
 		host = advt
 	}
 
-	addr, err := addr.Extract(host)
+	address, err := addr.Extract(host)
 	if err != nil {
 		return err
 	}
 
 	node := &registry.Node{
 		Id:      config.Name + "-" + config.Id,
-		Address: mnet.HostPort(addr, port),
+		Address: mnet.HostPort(address, port),
 	}
 
 	service := &registry.Service{

@@ -8,12 +8,9 @@ import (
 	"github.com/fztcjjl/tiger/trpc/registry/etcd"
 	"github.com/fztcjjl/tiger/trpc/server"
 	"github.com/fztcjjl/tiger/trpc/web"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-
-	//grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/spf13/viper"
 	"os"
@@ -31,6 +28,8 @@ type App struct {
 func NewApp(opt ...Option) *App {
 	app := new(App)
 	app.loadConfig()
+	app.initLogger()
+	app.initTracer()
 	options := newOptions(opt...)
 	app.opts = options
 
@@ -49,17 +48,16 @@ func NewApp(opt ...Option) *App {
 		)
 	}
 
-	app.initTracer()
 	app.server = server.NewServer(
 		server.Name("srv."+name),
 		server.Version(version),
 		server.Registry(r),
-		server.UnaryServerInterceptor(grpc_middleware.ChainUnaryServer(
+		server.Interceptors(
 			grpc_opentracing.UnaryServerInterceptor(),
 			grpc_prometheus.UnaryServerInterceptor,
 			grpc_zap.UnaryServerInterceptor(zap.Logger()),
 			grpc_recovery.UnaryServerInterceptor(),
-		)),
+		),
 	)
 
 	return app

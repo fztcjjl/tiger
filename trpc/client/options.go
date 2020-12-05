@@ -12,7 +12,7 @@ type Option func(*Options)
 type Options struct {
 	Registry    registry.Registry
 	DialOptions []grpc.DialOption
-	// Other options for implementations of the interface
+	// Other opts for implementations of the interface
 	// can be stored in a context
 	Context context.Context
 }
@@ -43,8 +43,8 @@ func newOptions(opt ...Option) Options {
 	return opts
 }
 
-type unaryClientInt struct{}
+type unaryClientInterceptors struct{}
 
-func UnaryClientInterceptor(u grpc.UnaryClientInterceptor) Option {
-	return setClientOption(unaryClientInt{}, u)
+func Interceptors(interceptors ...grpc.UnaryClientInterceptor) Option {
+	return setClientOption(unaryClientInterceptors{}, interceptors)
 }

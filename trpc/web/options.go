@@ -64,7 +64,7 @@ func newOptions(opt ...Option) Options {
 
 var (
 	// For serving
-	DefaultName    = "tiger-web"
+	DefaultName    = "web.tiger"
 	DefaultVersion = "latest"
 	DefaultId      = uuid.New().String()
 	DefaultAddress = ":0"

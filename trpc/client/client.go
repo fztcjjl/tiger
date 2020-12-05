@@ -8,14 +8,14 @@ import (
 )
 
 type Client struct {
-	options Options
-	conn    *grpc.ClientConn
-	r       registry.Registry
+	opts Options
+	conn *grpc.ClientConn
+	r    registry.Registry
 }
 
 func NewClient(service string, opt ...Option) *Client {
 	opts := newOptions(opt...)
-	client := Client{options: opts}
+	client := Client{opts: opts}
 
 	resolver.Register(opts.Registry)
 	target := opts.Registry.String() + ":///" + service
@@ -23,8 +23,8 @@ func NewClient(service string, opt ...Option) *Client {
 	grpcDialOptions := []grpc.DialOption{
 		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 	}
-	if u := client.getUnaryClientInterceptor(); u != nil {
-		grpcDialOptions = append(grpcDialOptions, grpc.WithUnaryInterceptor(u))
+	if interceptors := client.getInterceptors(); interceptors != nil {
+		grpcDialOptions = append(grpcDialOptions, grpc.WithChainUnaryInterceptor(interceptors...))
 	}
 
 	grpcDialOptions = append(grpcDialOptions, opts.DialOptions...)
@@ -43,9 +43,9 @@ func (c *Client) GetConn() *grpc.ClientConn {
 	return c.conn
 }
 
-func (s *Client) getUnaryClientInterceptor() grpc.UnaryClientInterceptor {
-	if s.options.Context != nil {
-		if v, ok := s.options.Context.Value(unaryClientInt{}).(grpc.UnaryClientInterceptor); ok && v != nil {
+func (s *Client) getInterceptors() []grpc.UnaryClientInterceptor {
+	if s.opts.Context != nil {
+		if v, ok := s.opts.Context.Value(unaryClientInterceptors{}).([]grpc.UnaryClientInterceptor); ok && v != nil {
 			return v
 		}
 	}

@@ -15,12 +15,11 @@ type Option func(*Options)
 
 var (
 	DefaultAddress          = ":0"
-	DefaultName             = "tiger.server"
+	DefaultName             = "srv.tiger"
 	DefaultVersion          = "latest"
 	DefaultId               = uuid.New().String()
 	DefaultRegisterInterval = time.Second * 30
 	DefaultRegisterTTL      = time.Second * 90
-	DefaultServer           = NewServer()
 )
 
 type Options struct {
@@ -168,7 +167,7 @@ type netListener struct{}
 type maxMsgSizeKey struct{}
 type maxConnKey struct{}
 type tlsAuth struct{}
-type unaryServerInt struct{}
+type unaryServerInterceptors struct{}
 
 // AuthTLS should be used to setup a secure authentication using TLS
 func AuthTLS(t *tls.Config) Option {
@@ -198,6 +197,6 @@ func MaxMsgSize(s int) Option {
 	return setServerOption(maxMsgSizeKey{}, s)
 }
 
-func UnaryServerInterceptor(u grpc.UnaryServerInterceptor) Option {
-	return setServerOption(unaryServerInt{}, u)
+func Interceptors(interceptors ...grpc.UnaryServerInterceptor) Option {
+	return setServerOption(unaryServerInterceptors{}, interceptors)
 }
