@@ -16,9 +16,9 @@ import (
 	log "github.com/fztcjjl/tiger/trpc/logger"
 	"github.com/fztcjjl/tiger/trpc/registry"
 	hash "github.com/mitchellh/hashstructure"
-	"go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes"
-	"go.etcd.io/etcd/mvcc/mvccpb"
+	"go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.uber.org/zap"
 )
 

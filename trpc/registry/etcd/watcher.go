@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/fztcjjl/tiger/trpc/registry"
-	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/client/v3"
 )
 
 type etcdWatcher struct {
